@@ -3,10 +3,10 @@ import { PATHS } from "../common/constants/paths.js"
 
 const rawToSamples = async () => {
   const rawDataDir = PATHS.RAW_DATA_DIR
-  const samplesDir = PATHS.SAMPLES_OBJECTS_DIR
+  const samplesDir = PATHS.SAMPLES_DIR
   const rawFiles = await fs.readdir(rawDataDir)
 
-  const samples = []
+  const rawSamples = []
 
   for (const rawFile of rawFiles) {
     const rawFilePath = rawDataDir + "/" + rawFile
@@ -19,18 +19,18 @@ const rawToSamples = async () => {
     const drawings = rawFileData.drawings
 
     for (const [label, paths] of Object.entries(drawings)) {
-      const sample = {
+      const rawSample = {
         session,
         student,
         label,
         paths,
       }
-      samples.push(sample)
+      rawSamples.push(rawSample)
 
       // create a new ts file in the samples objects directory that export the data as an object
-      const fileName = samples.length.toString() + ".json"
+      const fileName = rawSamples.length.toString() + ".json"
       const sampleFilePath = `${samplesDir}/${fileName}`
-      const sampleFileContent = JSON.stringify(sample)
+      const sampleFileContent = JSON.stringify(rawSample)
 
       await fs.writeFile(sampleFilePath, sampleFileContent)
     }

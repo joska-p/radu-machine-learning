@@ -1,35 +1,43 @@
 import * as fs from "node:fs/promises"
 import { PATHS } from "../common/constants/paths.js"
-import Samples from "./components/sample"
+import Sessions from "./components/sessions"
 
-const getSamples = async () => {
-  const sampleDir = PATHS.SAMPLES_OBJECTS_DIR
-  const sampleFiles = await fs.readdir(sampleDir)
-  const samples = []
+type Labels = "car" | "fish" | "house" | "tree" | "bycicle" | "guitar" | "pencil" | "clock"
+type Drawings = {
+  [key in Labels]: number[][][]
+}
+export type RawData = {
+  session: string
+  student: string
+  drawings: Drawings
+}
 
-  for (const sampleFile of sampleFiles) {
-    const sampleFilePath = sampleDir + "/" + sampleFile
-    const sampleFileContent = await fs.readFile(sampleFilePath, "utf8")
-    const sample = JSON.parse(sampleFileContent)
-    samples.push(sample)
+const getSessions = async () => {
+  const rawDataDir = PATHS.RAW_DATA_DIR
+  const rawFiles = await fs.readdir(rawDataDir)
+  const rawData = [] as RawData[]
+
+  for (const rawFile of rawFiles) {
+    const rawFilePath = rawDataDir + "/" + rawFile
+    const rawFileContent = await fs.readFile(rawFilePath, "utf8")
+    const raw = JSON.parse(rawFileContent)
+    rawData.push(raw)
   }
-  return samples
+  return rawData
 }
 
 export default async function Home() {
-  const samples = await getSamples()
+  const sessions = await getSessions()
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
-        <h1 className="text-3xl font-bold">
-          welcome to my experimental Radu Machine Learning project
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {samples.map(sample => {
-            return <Samples key={sample.label} sample={sample} />
-          })}
-        </div>
+    <main className="flex flex-col items-center p-12">
+      <h1 className="text-3xl font-bold mb-6">
+        welcome to my experimental Radu Machine Learning project
+      </h1>
+      <div>
+        {sessions.map(session => (
+          <Sessions key={session.session} samples={session} />
+        ))}
       </div>
     </main>
   )
