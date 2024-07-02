@@ -1,39 +1,15 @@
-import * as fs from "node:fs/promises"
-import { PATHS } from "../common/constants/paths.js"
-import Sessions from "./components/sessions"
+import Sessions from "./components/sessions/sessions"
+import Charts from "./components/charts/charts"
 
-type Labels = "car" | "fish" | "house" | "tree" | "bycicle" | "guitar" | "pencil" | "clock"
-type Drawings = {
-  [key in Labels]: number[][][]
-}
-export type RawData = {
-  session: string
-  student: string
-  drawings: Drawings
-}
-
-const getSessions = async () => {
-  const rawDataDir = PATHS.RAW_DATA_DIR
-  const rawFiles = await fs.readdir(rawDataDir)
-  const rawData = [] as RawData[]
-
-  for (const rawFile of rawFiles) {
-    const rawFilePath = rawDataDir + "/" + rawFile
-    const rawFileContent = await fs.readFile(rawFilePath, "utf8")
-    const raw = JSON.parse(rawFileContent)
-    rawData.push(raw)
-  }
-  return rawData
-}
-
-async function Home() {
-  const sessions = await getSessions()
-
+function Home() {
   return (
     <main id="sessions" className="w-full p-12">
-      {sessions.map(session => (
-        <Sessions key={session.session} samples={session} />
-      ))}
+      <div className="sessions">
+        <Sessions />
+      </div>
+      <div className="charts">
+        <Charts />
+      </div>
     </main>
   )
 }

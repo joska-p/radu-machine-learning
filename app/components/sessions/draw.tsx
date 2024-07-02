@@ -1,38 +1,6 @@
-"use client"
-import { useRef, useEffect } from "react"
+type Paths = number[][][]
 
-type DrawingProps = {
-  label: string
-  paths: number[][][]
-}
-
-const Drawing = ({ label, paths }: DrawingProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-      drawSample(canvas, ctx, paths)
-
-      return () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-      }
-    }
-  }, [paths, canvasRef])
-
-  return (
-    <div>
-      <canvas ref={canvasRef} className="w-full" />
-    </div>
-  )
-}
-
-const remap = (x: number, in_min: number, in_max: number, out_min: number, out_max: number) => {
-  return ((x - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min
-}
-
-const getMinMax = (paths: number[][][]) => {
+const getMinMax = (paths: Paths) => {
   let xMin = +Infinity
   let xMax = -Infinity
   let yMin = +Infinity
@@ -48,11 +16,7 @@ const getMinMax = (paths: number[][][]) => {
   return { xMin, xMax, yMin, yMax }
 }
 
-const drawSample = (
-  canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-  paths: number[][][]
-) => {
+const drawSample = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, paths: Paths) => {
   // make the canvas square according to the longer side
   const { width, height } = canvas
   const { canvasWidth, canvasHeight } =
@@ -95,4 +59,4 @@ const drawSample = (
   ctx.restore()
 }
 
-export default Drawing
+export { drawSample }
