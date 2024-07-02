@@ -3,11 +3,11 @@ import Charts from "./components/charts/charts"
 
 function Home() {
   return (
-    <main id="sessions" className="w-full p-12">
-      <div className="sessions">
+    <main id="sessions" className="w-full flex flex-row gap-2">
+      <div className="sessions basis-2/3">
         <Sessions />
       </div>
-      <div className="charts">
+      <div className="charts basis-1/3">
         <Charts />
       </div>
     </main>
