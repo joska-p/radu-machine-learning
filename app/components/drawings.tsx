@@ -1,6 +1,33 @@
 "use client"
 import { useRef, useEffect } from "react"
 
+type DrawingProps = {
+  label: string
+  paths: number[][][]
+}
+
+const Drawing = ({ label, paths }: DrawingProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+      drawSample(canvas, ctx, paths)
+
+      return () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
+    }
+  }, [paths, canvasRef])
+
+  return (
+    <div>
+      <canvas ref={canvasRef} className="w-full" />
+    </div>
+  )
+}
+
 const remap = (x: number, in_min: number, in_max: number, out_min: number, out_max: number) => {
   return ((x - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min
 }
@@ -26,21 +53,28 @@ const drawSample = (
   ctx: CanvasRenderingContext2D,
   paths: number[][][]
 ) => {
+  // make the canvas square according to the longer side
   const { width, height } = canvas
-  // make the canvas a square
-  if (width > height) {
-    canvas.width = height
-  } else {
-    canvas.height = width
-  }
+  const { canvasWidth, canvasHeight } =
+    width > height
+      ? { canvasWidth: width, canvasHeight: width }
+      : { canvasWidth: height, canvasHeight: height }
+  canvas.width = canvasWidth
+  canvas.height = canvasHeight
 
+  // compute the size of the sample and the longer side
   const { xMin, xMax, yMin, yMax } = getMinMax(paths)
-  const sampleWidth = xMax - xMin
-  const sampleHeight = yMax - yMin
+  const sampleWidth = (Math.abs(xMax) + Math.abs(xMin)) / 2
+  const sampleHeight = (Math.abs(yMax) + Math.abs(yMin)) / 2
+  const maxLength = Math.max(sampleWidth, sampleHeight)
 
-  const ratio = Math.floor(sampleWidth / sampleHeight)
+  // compute the scale factor based on the longer side
+  // using the scale method means we don't need to remap
+  const scaleX = canvasWidth / maxLength / 2
+  const scaleY = canvasHeight / maxLength / 2
 
   ctx.save()
+  ctx.scale(scaleX, scaleY)
   ctx.strokeStyle = "white"
   ctx.fillStyle = "transparent "
   ctx.lineWidth = 2
@@ -49,56 +83,16 @@ const drawSample = (
 
   for (const path of paths) {
     for (let i = 1; i < path.length; i++) {
-      let Xprev = path[i - 1][0]
-      let Yprev = path[i - 1][1]
-      let X = path[i][0]
-      let Y = path[i][1]
-
-      if (ratio >= 1) {
-        Xprev = remap(Xprev, xMin, xMax, 0, width)
-        Yprev = remap(Yprev, yMin, xMax, 0, width)
-        X = remap(X, xMin, xMax, 0, width)
-        Y = remap(Y, yMin, xMax, 0, width)
-      } else {
-        Yprev = remap(Yprev, yMin, yMax, 0, height)
-        Xprev = remap(Xprev, xMin, yMax, 0, height)
-        Y = remap(Y, yMin, yMax, 0, height)
-        X = remap(X, xMin, yMax, 0, height)
-      }
+      const Xprev = path[i - 1][0]
+      const Yprev = path[i - 1][1]
+      const X = path[i][0]
+      const Y = path[i][1]
       ctx.moveTo(Xprev, Yprev)
       ctx.lineTo(X, Y)
     }
   }
   ctx.stroke()
   ctx.restore()
-}
-
-type DrawingProps = {
-  label: string
-  paths: number[][][]
-}
-
-const Drawing = ({ label, paths }: DrawingProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
-      drawSample(canvas, ctx, paths)
-
-      return () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-      }
-    }
-  }, [paths, canvasRef])
-
-  return (
-    <div className="flex flex-col items-center overflow-hidden">
-      <p className="text-slate-600">{label}</p>
-      <canvas ref={canvasRef} />
-    </div>
-  )
 }
 
 export default Drawing

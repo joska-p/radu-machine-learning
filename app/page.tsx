@@ -26,19 +26,16 @@ const getSessions = async () => {
   return rawData
 }
 
-export default async function Home() {
+async function Home() {
   const sessions = await getSessions()
 
   return (
-    <main className="flex flex-col items-center p-12">
-      <h1 className="text-3xl font-bold mb-6">
-        welcome to my experimental Radu Machine Learning project
-      </h1>
-      <div>
-        {sessions.map(session => (
-          <Sessions key={session.session} samples={session} />
-        ))}
-      </div>
+    <main id="sessions" className="w-full p-12">
+      {sessions.map(session => (
+        <Sessions key={session.session} samples={session} />
+      ))}
     </main>
   )
 }
+
+export default Home
